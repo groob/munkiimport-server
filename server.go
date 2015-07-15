@@ -122,6 +122,6 @@ func main() {
 	}
 
 	http.HandleFunc("/import/", handler)
-	http.Handle("/", http.FileServer(http.Dir("static")))
+	http.Handle("/", http.FileServer(http.Dir("html")))
 	http.ListenAndServe(":8080", nil)
 }

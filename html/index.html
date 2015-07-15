@@ -1,0 +1,57 @@
+<html>
+	<link rel="stylesheet" href="static/css/material.min.css">
+	<link rel="stylesheet" href="static/css/munkiimport.css">
+	<script src="static/js/material.min.js"></script>
+	<script src="static/js/dropzone.js"></script>
+	<link rel="stylesheet" href="http://fonts.googleapis.com/icon?family=Material+Icons">
+
+	<body>
+		<!-- Simple Textfield -->
+		<form action="#" id="upload-zone" class="dropzone">
+			<div class="mdl-textfield mdl-js-textfield munkiimport">
+				<input class="mdl-textfield__input" type="text" id="subdirectory" name="subdirectory"/>
+				<label class="mdl-textfield__label" for="subdirectory">Subdirectory</label>
+			</div>
+			<br />
+			<!-- Floating Multiline Textfield -->
+			<div class="mdl-textfield mdl-js-textfield munkiimport">
+				<textarea class="mdl-textfield__input" type="text" name="description" rows= "6" id="description" ></textarea>
+				<label class="mdl-textfield__label" for="description">Description</label>
+			</div>
+			<br />
+			<div id="dropzonePreview" class="dz-default dz-message">
+				<span>Drop files here to upload</span>
+			</div>
+			<!-- Accent-colored raised button with ripple -->
+			<button type="submit" class="mdl-button mdl-js-button mdl-button--raised mdl-button--accent mdl-js-ripple-effect">
+				Import
+			</button>
+		</form>
+
+		<script>
+			Dropzone.options.uploadZone = {
+				paramName: "file", // The name that will be used to transfer the file
+				url: "/import/", 
+				maxFiles: 1,
+				method: "post",
+				addRemoveLinks: true,
+				createImageThumbnails: false,
+				autoProcessQueue: false,
+				clickable:'#dropzonePreview',
+
+				// The setting up of the dropzone
+				init: function() {
+					var myDropzone = this;
+
+					// First change the button to actually tell Dropzone to process the queue.
+					this.element.querySelector("button[type=submit]").addEventListener("click", function(e) {
+						// Make sure that the form isn't actually being sent.
+						e.preventDefault();
+						e.stopPropagation();
+						myDropzone.processQueue();
+					});
+				}
+			};
+		</script>
+	</body>
+</html>
