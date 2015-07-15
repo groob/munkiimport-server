@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+
+<meta charset="utf-8">
+
+<title>munkiimport over http</title>
+
+<script src="js/dropzone.js"></script>
+<link rel="stylesheet" href="css/dropzone.css">
+
+<script>
+	Dropzone.options.myAwesomeDropzone = {
+		paramName: "file", // The name that will be used to transfer the file
+		url: "/import/", 
+		maxFiles: 1,
+		method: "post",
+		addRemoveLinks: true,
+		createImageThumbnails: false,
+		autoProcessQueue: false,
+
+		// The setting up of the dropzone
+		init: function() {
+			var myDropzone = this;
+
+			// First change the button to actually tell Dropzone to process the queue.
+			this.element.querySelector("button[type=submit]").addEventListener("click", function(e) {
+				// Make sure that the form isn't actually being sent.
+				e.preventDefault();
+				e.stopPropagation();
+				myDropzone.processQueue();
+			});
+		}
+	};
+</script>
+
+
+<p>
+Drag and drop a file to import to Munki.
+</p>
+
+<!-- Change /upload-target to your upload address -->
+<form id="my-awesome-dropzone" action="/target/" class="dropzone">
+	catalog: <input type="text" name="catalog" /><br />
+	subdirectory: <input type="text" name="subdirectory" /><br />
+	<p>
+	<button type="submit">Import!</button>
+	</p>
+</form>
+
+

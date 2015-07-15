@@ -11,8 +11,12 @@ import (
 )
 
 // function Import runs munkiimport command.
-func Import(file string) error {
-	importCmd := exec.Command("/usr/local/munki/munkiimport", "-v", "-n", file)
+func Import(file string, args []string) error {
+	importCmd := exec.Command("/usr/local/munki/munkiimport", "-v", "-n")
+	for _, arg := range args {
+		importCmd.Args = append(importCmd.Args, arg)
+	}
+	importCmd.Args = append(importCmd.Args, file)
 	var out bytes.Buffer
 	importCmd.Stdout = &out
 	err := importCmd.Run()
@@ -26,34 +30,75 @@ func Import(file string) error {
 // handle PUT requests.
 // copies the binary to a tmp folder and calls munkiimport command.
 func newPackageHandler(w http.ResponseWriter, r *http.Request) {
+	var args []string
+	// TODO append r.URL.Query() params to args
 	packageName := r.URL.Path[len("/import/"):]
-	f, err := os.Create("tmp/" + packageName)
+	saveMunkiPkg(r.Body, packageName)
+	err := Import("tmp/"+packageName, args)
 	if err != nil {
 		log.Println(err)
-	}
-	defer f.Close()
-	// Save file to disk.
-	fileLength, err := io.Copy(f, r.Body)
-	if err != nil {
-		log.Println(err)
-	}
-	// handle file size mismatch
-	if fileLength != r.ContentLength {
-		log.Println("mismatched size")
 	}
 
-	// import munki pkg
-	err = Import("tmp/" + packageName)
-	if err != nil {
-		log.Println(err)
-	}
 }
 
 func handler(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case "PUT":
 		newPackageHandler(w, r)
+	case "POST":
+		formHandler(w, r)
 	}
+}
+
+// handle form input
+func formHandler(w http.ResponseWriter, r *http.Request) {
+	args, err := processFormValues(r)
+	munkiPkg, header, err := r.FormFile("file")
+	if err != nil {
+		log.Println(err)
+	}
+	packageName := header.Filename
+	err = saveMunkiPkg(munkiPkg, packageName)
+	if err != nil {
+		log.Println(err)
+	}
+	err = Import("tmp/"+packageName, args)
+	if err != nil {
+		log.Println(err)
+	}
+
+}
+
+// turn form inputs into munkiimport and makepkginfo params.
+func processFormValues(r *http.Request) ([]string, error) {
+	var args []string
+	err := r.ParseMultipartForm(0)
+	if err != nil {
+		return nil, err
+	}
+	params := r.MultipartForm.Value
+	for key, value := range params {
+		if key != "null" {
+			kv := "--" + key + "=" + value[0]
+			args = append(args, kv)
+		}
+	}
+	return args, nil
+}
+
+// save an upload to tmp folder
+func saveMunkiPkg(munkiPkg io.Reader, packageName string) error {
+	f, err := os.Create("tmp/" + packageName)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+	// Save file to disk.
+	_, err = io.Copy(f, munkiPkg)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 // create directory where uploads are saved to.
@@ -77,5 +122,6 @@ func main() {
 	}
 
 	http.HandleFunc("/import/", handler)
+	http.Handle("/", http.FileServer(http.Dir("static")))
 	http.ListenAndServe(":8080", nil)
 }
