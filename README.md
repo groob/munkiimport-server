@@ -20,4 +20,4 @@ curl example:
 
 # Web Upload
 
-![img](http://i.imgur.com/XiZSBdB.png)
+![img](http://i.imgur.com/3oR5oTd.png)
