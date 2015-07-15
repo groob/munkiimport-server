@@ -18,4 +18,6 @@ curl example:
 
 `curl -v http://localhost:8080/import/ --upload-file "~/Downloads/Firefox 39.0.dmg"`
 
+# Web Upload
 
+![img](http://i.imgur.com/XiZSBdB.png)
