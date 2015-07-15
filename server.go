@@ -10,6 +10,14 @@ import (
 	"os/exec"
 )
 
+func makecatalogs() error {
+	_, err := exec.Command("/usr/local/munki/makecatalogs").Output()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 // function Import runs munkiimport command.
 func Import(file string, args []string) error {
 	importCmd := exec.Command("/usr/local/munki/munkiimport", "-v", "-n")
@@ -24,7 +32,8 @@ func Import(file string, args []string) error {
 		return err
 	}
 	fmt.Println(out.String())
-	return nil
+	// run makecatalogs
+	return makecatalogs()
 }
 
 // handle PUT requests.
